@@ -1,0 +1,720 @@
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sfide</title>
+    <style>
+        body {
+            background-color: #4682B4; /* Blu avio scuro */
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .allievo-section {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        .allievo-name {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .add-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .add-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background-color: rgba(70, 130, 180, 0.95);
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .modal-header {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal-form {
+            color: white;
+        }
+        .modal-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .modal-input, .modal-textarea, .modal-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        .modal-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .modal-input:focus, .modal-textarea:focus, .modal-select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .modal-input::placeholder, .modal-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .modal-select option {
+            background-color: #4682B4;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .sfide-container {
+            margin-top: 15px;
+        }
+        .sfida-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: 250px 100px 120px 350px 80px;
+            gap: 20px;
+            align-items: start;
+            position: relative;
+        }
+        .sfida-item:last-child {
+            margin-bottom: 0;
+        }
+        .edit-button, .delete-button {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .sfida-item:hover .edit-button,
+        .sfida-item:hover .delete-button {
+            opacity: 1;
+        }
+        .edit-button:hover {
+            color: #4CAF50;
+            transform: scale(1.2);
+        }
+        .delete-button:hover {
+            color: #ff4444;
+            transform: scale(1.2);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .sfida-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            min-height: 20px;
+            display: block;
+        }
+        .sfida-value {
+            color: white;
+            font-size: 1rem;
+            display: block;
+        }
+        .sfida-item > div {
+            display: flex;
+            flex-direction: column;
+        }
+        .voto {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .data {
+            text-align: center;
+        }
+        .note {
+            font-style: italic;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+        .modal-button-cancel {
+            background: none;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+        .modal-button-save {
+            background: white;
+            color: #4682B4;
+        }
+        .modal-button:hover {
+            opacity: 0.9;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                max-width: 100%;
+            }
+            .allievo-section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            .allievo-name {
+                font-size: 1.3rem;
+                padding-right: 50px;
+            }
+            .add-button {
+                width: 50px;
+                height: 50px;
+                font-size: 2rem;
+                top: 15px;
+                right: 15px;
+            }
+            .sfida-item {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 15px;
+            }
+            .edit-button, .delete-button {
+                opacity: 1;
+                font-size: 1.5rem;
+                padding: 10px;
+                min-width: 44px;
+                min-height: 44px;
+            }
+            .action-buttons {
+                gap: 10px;
+                justify-content: flex-end;
+                margin-top: 10px;
+            }
+            .sfida-label {
+                font-size: 0.85rem;
+                margin-bottom: 8px;
+            }
+            .sfida-value {
+                font-size: 1rem;
+            }
+            .modal-content {
+                padding: 20px;
+                max-width: 95%;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .modal-header {
+                font-size: 1.2rem;
+                margin-bottom: 15px;
+            }
+            .modal-label {
+                font-size: 1rem;
+            }
+            .modal-input, .modal-textarea, .modal-select {
+                padding: 14px;
+                font-size: 1rem;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            .modal-button {
+                padding: 14px 20px;
+                font-size: 1.1rem;
+                min-height: 48px;
+                width: 100%;
+            }
+            .modal-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="allievi-container">
+        <!-- Le sezioni degli allievi verranno generate dinamicamente dal JavaScript -->
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" onclick="closeModal()">×</button>
+            <div class="modal-header" id="modalHeader">Aggiungi Sfida</div>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label class="modal-label">Nome Sfida</label>
+                    <input type="text" class="modal-input" id="nomeSfidaInput" placeholder="Inserisci il nome della sfida" required>
+                </div>
+                <div class="form-group">
+                    <label class="modal-label">Voto</label>
+                    <select class="modal-select" id="votoSelect" required>
+                        <option value="">Seleziona voto</option>
+                        <option value="0">0</option>
+                        <option value="1-">1-</option>
+                        <option value="1">1</option>
+                        <option value="1+">1+</option>
+                        <option value="1.5">1½</option>
+                        <option value="2-">2-</option>
+                        <option value="2">2</option>
+                        <option value="2+">2+</option>
+                        <option value="2.5">2½</option>
+                        <option value="3-">3-</option>
+                        <option value="3">3</option>
+                        <option value="3+">3+</option>
+                        <option value="3.5">3½</option>
+                        <option value="4-">4-</option>
+                        <option value="4">4</option>
+                        <option value="4+">4+</option>
+                        <option value="4.5">4½</option>
+                        <option value="5-">5-</option>
+                        <option value="5">5</option>
+                        <option value="5+">5+</option>
+                        <option value="5.5">5½</option>
+                        <option value="6-">6-</option>
+                        <option value="6">6</option>
+                        <option value="6+">6+</option>
+                        <option value="6.5">6½</option>
+                        <option value="7-">7-</option>
+                        <option value="7">7</option>
+                        <option value="7+">7+</option>
+                        <option value="7.5">7½</option>
+                        <option value="8-">8-</option>
+                        <option value="8">8</option>
+                        <option value="8+">8+</option>
+                        <option value="8.5">8½</option>
+                        <option value="9-">9-</option>
+                        <option value="9">9</option>
+                        <option value="9+">9+</option>
+                        <option value="9.5">9½</option>
+                        <option value="10-">10-</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="modal-label">Data</label>
+                    <input type="date" class="modal-input" id="dataInput" required>
+                </div>
+                <div class="form-group">
+                    <label class="modal-label">Nota</label>
+                    <textarea class="modal-textarea" id="noteTextarea" placeholder="Aggiungi note..."></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-cancel" onclick="closeModal()">Annulla</button>
+                    <button class="modal-button modal-button-save" onclick="saveSfida()">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAllievoName = '';
+        let editingSfidaItem = null;
+
+        function openModal(allievoName, sfidaItem = null) {
+            currentAllievoName = allievoName;
+            editingSfidaItem = sfidaItem;
+            
+            const modalHeader = document.getElementById('modalHeader');
+            const saveButton = document.querySelector('.modal-button-save');
+            
+            if (sfidaItem) {
+                // Modal in modalità modifica
+                modalHeader.textContent = 'Modifica Sfida';
+                saveButton.textContent = 'Salva Modifiche';
+                
+                const nomeValue = sfidaItem.querySelector('.sfida-value').textContent;
+                const votoValue = sfidaItem.querySelector('.voto').textContent;
+                const dataValueText = sfidaItem.querySelector('.data').textContent;
+                const noteValue = sfidaItem.querySelector('.note').textContent;
+                
+                // Converti la data dal formato italiano (GG/MM/AAAA) al formato ISO (YYYY-MM-DD)
+                let dataValueISO = '';
+                if (dataValueText && dataValueText.includes('/')) {
+                    const [giorno, mese, anno] = dataValueText.split('/');
+                    dataValueISO = `${anno}-${mese.padStart(2, '0')}-${giorno.padStart(2, '0')}`;
+                } else {
+                    dataValueISO = dataValueText;
+                }
+                
+                document.getElementById('nomeSfidaInput').value = nomeValue;
+                document.getElementById('votoSelect').value = votoValue;
+                document.getElementById('dataInput').value = dataValueISO;
+                document.getElementById('noteTextarea').value = noteValue === '-' ? '' : noteValue;
+            } else {
+                // Modal in modalità aggiunta
+                modalHeader.textContent = 'Aggiungi Sfida';
+                saveButton.textContent = 'Salva';
+                
+                document.getElementById('nomeSfidaInput').value = '';
+                document.getElementById('votoSelect').value = '';
+                document.getElementById('dataInput').value = '';
+                document.getElementById('noteTextarea').value = '';
+            }
+            
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            editingSfidaItem = null;
+            document.getElementById('modal').classList.remove('active');
+            document.getElementById('nomeSfidaInput').value = '';
+            document.getElementById('votoSelect').value = '';
+            document.getElementById('dataInput').value = '';
+            document.getElementById('noteTextarea').value = '';
+        }
+
+        // Chiudi il modal cliccando fuori
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        function saveSfida() {
+            const nomeSfida = document.getElementById('nomeSfidaInput').value.trim();
+            const voto = document.getElementById('votoSelect').value;
+            const data = document.getElementById('dataInput').value;
+            const note = document.getElementById('noteTextarea').value.trim();
+
+            if (!nomeSfida || !voto || !data) {
+                alert('Per favore, compila tutti i campi obbligatori (Nome Sfida, Voto, Data).');
+                return;
+            }
+
+            // Trova la sezione dell'allievo corrente
+            const allievoSections = document.querySelectorAll('.allievo-section');
+            let targetSection = null;
+            for (let section of allievoSections) {
+                if (section.querySelector('.allievo-name').textContent === currentAllievoName) {
+                    targetSection = section;
+                    break;
+                }
+            }
+
+            if (!targetSection) {
+                alert('Errore: allievo non trovato.');
+                return;
+            }
+
+            if (editingSfidaItem) {
+                // Modifica sfida esistente
+                const nomeValue = editingSfidaItem.querySelector('.sfida-value');
+                const votoValue = editingSfidaItem.querySelector('.voto');
+                const dataValue = editingSfidaItem.querySelector('.data');
+                const noteValue = editingSfidaItem.querySelector('.note');
+                
+                // Formatta la data in formato italiano (GG/MM/AAAA)
+                const dataObj = new Date(data + 'T00:00:00');
+                const giorno = String(dataObj.getDate()).padStart(2, '0');
+                const mese = String(dataObj.getMonth() + 1).padStart(2, '0');
+                const anno = dataObj.getFullYear();
+                const dataFormattata = `${giorno}/${mese}/${anno}`;
+                
+                nomeValue.textContent = nomeSfida;
+                votoValue.textContent = voto;
+                dataValue.textContent = dataFormattata;
+                noteValue.textContent = note || '-';
+            } else {
+                // Aggiungi nuova sfida
+                const sfideContainer = targetSection.querySelector('.sfide-container');
+                const sfidaItem = createSfidaItem(nomeSfida, voto, data, note, currentAllievoName);
+                sfideContainer.appendChild(sfidaItem);
+            }
+
+            // Salva nel localStorage
+            saveAllievoSfide(currentAllievoName, targetSection);
+
+            // Chiudi il modal e resetta i campi
+            closeModal();
+        }
+
+        function createSfidaItem(nomeSfida, voto, data, note, allievoName) {
+            const sfidaItem = document.createElement('div');
+            sfidaItem.className = 'sfida-item';
+            
+            // Crea la struttura HTML
+            const nomeDiv = document.createElement('div');
+            const nomeLabel = document.createElement('div');
+            nomeLabel.className = 'sfida-label';
+            nomeLabel.textContent = 'Nome Sfida';
+            const nomeValue = document.createElement('div');
+            nomeValue.className = 'sfida-value';
+            nomeValue.textContent = nomeSfida;
+            nomeDiv.appendChild(nomeLabel);
+            nomeDiv.appendChild(nomeValue);
+            
+            const votoDiv = document.createElement('div');
+            const votoLabel = document.createElement('div');
+            votoLabel.className = 'sfida-label';
+            votoLabel.textContent = 'Voto';
+            const votoValue = document.createElement('div');
+            votoValue.className = 'sfida-value voto';
+            votoValue.textContent = voto;
+            votoDiv.appendChild(votoLabel);
+            votoDiv.appendChild(votoValue);
+            
+            const dataDiv = document.createElement('div');
+            const dataLabel = document.createElement('div');
+            dataLabel.className = 'sfida-label';
+            dataLabel.textContent = 'Data';
+            const dataValue = document.createElement('div');
+            dataValue.className = 'sfida-value data';
+            // Formatta la data in formato italiano (GG/MM/AAAA)
+            const dataObj = new Date(data + 'T00:00:00');
+            const giorno = String(dataObj.getDate()).padStart(2, '0');
+            const mese = String(dataObj.getMonth() + 1).padStart(2, '0');
+            const anno = dataObj.getFullYear();
+            dataValue.textContent = `${giorno}/${mese}/${anno}`;
+            dataDiv.appendChild(dataLabel);
+            dataDiv.appendChild(dataValue);
+            
+            const noteDiv = document.createElement('div');
+            const noteLabel = document.createElement('div');
+            noteLabel.className = 'sfida-label';
+            noteLabel.textContent = 'Note';
+            const noteValue = document.createElement('div');
+            noteValue.className = 'sfida-value note';
+            noteValue.textContent = note || '-';
+            noteDiv.appendChild(noteLabel);
+            noteDiv.appendChild(noteValue);
+            
+            const actionButtons = document.createElement('div');
+            actionButtons.className = 'action-buttons';
+            
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-button';
+            editBtn.textContent = '✏️';
+            editBtn.title = 'Modifica sfida';
+            editBtn.onclick = function() { openModal(allievoName, sfidaItem); };
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-button';
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.title = 'Elimina sfida';
+            deleteBtn.onclick = function() { deleteSfida(this); };
+            
+            actionButtons.appendChild(editBtn);
+            actionButtons.appendChild(deleteBtn);
+            
+            sfidaItem.appendChild(nomeDiv);
+            sfidaItem.appendChild(votoDiv);
+            sfidaItem.appendChild(dataDiv);
+            sfidaItem.appendChild(noteDiv);
+            sfidaItem.appendChild(actionButtons);
+            
+            return sfidaItem;
+        }
+
+        function deleteSfida(button) {
+            if (confirm('Sei sicuro di voler eliminare questa sfida?')) {
+                const sfidaItem = button.closest('.sfida-item');
+                const allievoSection = sfidaItem.closest('.allievo-section');
+                const allievoName = allievoSection.querySelector('.allievo-name').textContent;
+                
+                sfidaItem.remove();
+                saveAllievoSfide(allievoName, allievoSection);
+            }
+        }
+
+        function saveAllievoSfide(allievoName, allievoSection) {
+            try {
+                const sfideContainer = allievoSection.querySelector('.sfide-container');
+                if (!sfideContainer) return;
+                
+                const sfideHTML = sfideContainer.innerHTML;
+                localStorage.setItem('sfide_' + allievoName, sfideHTML);
+            } catch (error) {
+                console.error('Errore nel salvataggio delle sfide:', error);
+            }
+        }
+
+        function loadAllievoSfide(allievoName, sfideContainer) {
+            try {
+                const savedSfide = localStorage.getItem('sfide_' + allievoName);
+                if (savedSfide) {
+                    sfideContainer.innerHTML = savedSfide;
+                    // Re-attach event listeners ai pulsanti di modifica ed eliminazione
+                    sfideContainer.querySelectorAll('.sfida-item').forEach(item => {
+                        const editBtn = item.querySelector('.edit-button');
+                        const deleteBtn = item.querySelector('.delete-button');
+                        if (editBtn) {
+                            editBtn.onclick = function() { openModal(allievoName, item); };
+                        }
+                        if (deleteBtn) {
+                            deleteBtn.onclick = function() { deleteSfida(this); };
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento delle sfide:', error);
+            }
+        }
+
+        function createAllievoSection(allievoName) {
+            const section = document.createElement('div');
+            section.className = 'allievo-section';
+            
+            const addButton = document.createElement('button');
+            addButton.className = 'add-button';
+            addButton.textContent = '+';
+            addButton.onclick = function() { openModal(allievoName); };
+            
+            const allievoNameDiv = document.createElement('div');
+            allievoNameDiv.className = 'allievo-name';
+            allievoNameDiv.textContent = allievoName;
+            
+            const sfideContainer = document.createElement('div');
+            sfideContainer.className = 'sfide-container';
+            
+            section.appendChild(addButton);
+            section.appendChild(allievoNameDiv);
+            section.appendChild(sfideContainer);
+            
+            return section;
+        }
+
+        function getDefaultAllievi() {
+            // Lista degli allievi iniziali (fallback se non ci sono dati salvati)
+            return [
+                { nome: 'Alessio', categoria: 'Ballo', insegnante: 'Emanuel Lo', squadra: '---' },
+                { nome: 'Alex', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Angie', categoria: 'Canto', insegnante: 'Lorella Cuccarini', squadra: '---' },
+                { nome: 'Anna', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Emiliano', categoria: 'Ballo', insegnante: 'Alessandra Celentano', squadra: '---' },
+                { nome: 'Flavia', categoria: 'Canto', insegnante: 'Anna Pettinelli', squadra: '---' },
+                { nome: 'Gard', categoria: 'Canto', insegnante: 'Anna Pettinelli', squadra: '---' },
+                { nome: 'Maria Rosaria', categoria: 'Ballo', insegnante: 'Alessandra Celentano', squadra: '---' },
+                { nome: 'Michele', categoria: 'Canto', insegnante: 'Lorella Cuccarini', squadra: '---' },
+                { nome: 'Michelle', categoria: 'Canto', insegnante: 'Lorella Cuccarini', squadra: '---' },
+                { nome: 'Opi', categoria: 'Canto', insegnante: 'Anna Pettinelli', squadra: '---' },
+                { nome: 'Paola', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Pierpaolo', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Plasma', categoria: 'Canto', insegnante: 'Rudi Zerbi', squadra: '---' },
+                { nome: 'Riccardo', categoria: 'Canto', insegnante: 'Rudi Zerbi', squadra: '---' },
+                { nome: 'Valentina', categoria: 'Canto', insegnante: 'Rudi Zerbi', squadra: '---' }
+            ];
+        }
+
+        function loadAllieviSections() {
+            const container = document.getElementById('allievi-container');
+            if (!container) return;
+
+            // Carica gli allievi dal localStorage
+            const savedAllievi = localStorage.getItem('allievi');
+            let allievi = [];
+
+            if (savedAllievi) {
+                try {
+                    allievi = JSON.parse(savedAllievi);
+                } catch (error) {
+                    console.error('Errore nel caricamento degli allievi:', error);
+                    allievi = getDefaultAllievi();
+                }
+            } else {
+                // Se non ci sono allievi salvati, usa quelli iniziali
+                allievi = getDefaultAllievi();
+            }
+
+            // Pulisci il container
+            container.innerHTML = '';
+
+            // Crea una sezione per ogni allievo
+            allievi.forEach(allievo => {
+                const allievoName = allievo.nome;
+                const section = createAllievoSection(allievoName);
+                container.appendChild(section);
+
+                // Carica le sfide per questo allievo
+                const sfideContainer = section.querySelector('.sfide-container');
+                loadAllievoSfide(allievoName, sfideContainer);
+            });
+        }
+
+        // Carica le sezioni degli allievi quando la pagina viene caricata
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllieviSections();
+        });
+    </script>
+</body>
+</html>
+

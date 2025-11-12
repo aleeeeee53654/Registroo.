@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allievi</title>
+    <style>
+        body {
+            background-color: #4682B4; /* Blu avio scuro */
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .table-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 1200px;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        th {
+            background-color: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        th:nth-child(2), td:nth-child(2) {
+            text-align: center;
+        }
+        th:nth-child(4), td:nth-child(4) {
+            text-align: center;
+        }
+        th:nth-child(5), td:nth-child(5) {
+            text-align: center;
+            width: 120px;
+        }
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+        .edit-button, .delete-button {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        tr:hover .edit-button, tr:hover .delete-button {
+            opacity: 1;
+        }
+        .edit-button:hover {
+            color: #4CAF50;
+            transform: scale(1.2);
+        }
+        .delete-button:hover {
+            color: #ff4444;
+            transform: scale(1.2);
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .add-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        .add-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background-color: rgba(70, 130, 180, 0.95);
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .modal-header {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal-form {
+            color: white;
+        }
+        .modal-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .modal-input, .modal-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        .modal-input:focus, .modal-select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .modal-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .modal-select option {
+            background-color: #4682B4;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+        .modal-button-cancel {
+            background: none;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+        .modal-button-save {
+            background: white;
+            color: #4682B4;
+        }
+        .modal-button:hover {
+            opacity: 0.9;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .table-container {
+                padding: 10px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            table {
+                min-width: 600px;
+            }
+            th, td {
+                padding: 12px 8px;
+                font-size: 0.9rem;
+            }
+            th {
+                font-size: 1rem;
+            }
+            .add-button {
+                width: 60px;
+                height: 60px;
+                font-size: 2.5rem;
+                top: 10px;
+                right: 10px;
+            }
+            .edit-button, .delete-button {
+                opacity: 1;
+                font-size: 1.5rem;
+                padding: 8px 12px;
+                min-width: 44px;
+                min-height: 44px;
+            }
+            .action-buttons {
+                gap: 10px;
+            }
+            .modal-content {
+                padding: 20px;
+                max-width: 95%;
+            }
+            .modal-button {
+                padding: 14px 24px;
+                font-size: 1.1rem;
+                min-height: 48px;
+            }
+            .modal-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .modal-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="add-button" onclick="openModal()">+</button>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Insegnante</th>
+                    <th>Squadra</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Alessio</td><td>Ballo</td><td>Emanuel Lo</td><td>---</td><td></td></tr>
+                <tr><td>Alex</td><td>Ballo</td><td>Veronica Peparini</td><td>---</td><td></td></tr>
+                <tr><td>Angie</td><td>Canto</td><td>Lorella Cuccarini</td><td>---</td><td></td></tr>
+                <tr><td>Anna</td><td>Ballo</td><td>Veronica Peparini</td><td>---</td><td></td></tr>
+                <tr><td>Emiliano</td><td>Ballo</td><td>Alessandra Celentano</td><td>---</td><td></td></tr>
+                <tr><td>Flavia</td><td>Canto</td><td>Anna Pettinelli</td><td>---</td><td></td></tr>
+                <tr><td>Gard</td><td>Canto</td><td>Anna Pettinelli</td><td>---</td><td></td></tr>
+                <tr><td>Maria Rosaria</td><td>Ballo</td><td>Alessandra Celentano</td><td>---</td><td></td></tr>
+                <tr><td>Michele</td><td>Canto</td><td>Lorella Cuccarini</td><td>---</td><td></td></tr>
+                <tr><td>Michelle</td><td>Canto</td><td>Lorella Cuccarini</td><td>---</td><td></td></tr>
+                <tr><td>Opi</td><td>Canto</td><td>Anna Pettinelli</td><td>---</td><td></td></tr>
+                <tr><td>Paola</td><td>Ballo</td><td>Veronica Peparini</td><td>---</td><td></td></tr>
+                <tr><td>Pierpaolo</td><td>Ballo</td><td>Veronica Peparini</td><td>---</td><td></td></tr>
+                <tr><td>Plasma</td><td>Canto</td><td>Rudi Zerbi</td><td>---</td><td></td></tr>
+                <tr><td>Riccardo</td><td>Canto</td><td>Rudi Zerbi</td><td>---</td><td></td></tr>
+                <tr><td>Valentina</td><td>Canto</td><td>Rudi Zerbi</td><td>---</td><td></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal per aggiungere nuovo allievo -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" onclick="closeModal()">×</button>
+            <div class="modal-header">Aggiungi Nuovo Allievo</div>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label class="modal-label">Nome</label>
+                    <input type="text" class="modal-input" id="nomeInput" placeholder="Inserisci il nome" required>
+                </div>
+                <div class="form-group">
+                    <label class="modal-label">Categoria</label>
+                    <select class="modal-select" id="categoriaSelect" required>
+                        <option value="">Seleziona categoria</option>
+                        <option value="Ballo">Ballo</option>
+                        <option value="Canto">Canto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="modal-label">Insegnante</label>
+                    <input type="text" class="modal-input" id="insegnanteInput" placeholder="Inserisci il nome dell'insegnante" required>
+                </div>
+                <div class="form-group">
+                    <label class="modal-label">Squadra</label>
+                    <input type="text" class="modal-input" id="squadraInput" placeholder="Inserisci la squadra (opzionale)">
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-cancel" onclick="closeModal()">Annulla</button>
+                    <button class="modal-button modal-button-save" onclick="saveAllievo()">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let editingRow = null;
+
+        function openModal(row = null) {
+            editingRow = row;
+            const modalHeader = document.querySelector('.modal-header');
+            const saveButton = document.querySelector('.modal-button-save');
+            
+            if (row) {
+                // Modal in modalità modifica
+                modalHeader.textContent = 'Modifica Allievo';
+                saveButton.textContent = 'Salva Modifiche';
+                
+                const cells = row.querySelectorAll('td');
+                document.getElementById('nomeInput').value = cells[0].textContent;
+                document.getElementById('categoriaSelect').value = cells[1].textContent;
+                document.getElementById('insegnanteInput').value = cells[2].textContent;
+                document.getElementById('squadraInput').value = cells[3].textContent === '---' ? '' : cells[3].textContent;
+            } else {
+                // Modal in modalità aggiunta
+                modalHeader.textContent = 'Aggiungi Nuovo Allievo';
+                saveButton.textContent = 'Salva';
+                
+                document.getElementById('nomeInput').value = '';
+                document.getElementById('categoriaSelect').value = '';
+                document.getElementById('insegnanteInput').value = '';
+                document.getElementById('squadraInput').value = '';
+            }
+            
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            editingRow = null;
+            document.getElementById('modal').classList.remove('active');
+            document.getElementById('nomeInput').value = '';
+            document.getElementById('categoriaSelect').value = '';
+            document.getElementById('insegnanteInput').value = '';
+            document.getElementById('squadraInput').value = '';
+        }
+
+        // Chiudi il modal cliccando fuori
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        function saveAllievo() {
+            const nome = document.getElementById('nomeInput').value.trim();
+            const categoria = document.getElementById('categoriaSelect').value;
+            const insegnante = document.getElementById('insegnanteInput').value.trim();
+            const squadra = document.getElementById('squadraInput').value.trim() || '---';
+
+            if (!nome || !categoria || !insegnante) {
+                alert('Per favore, compila tutti i campi obbligatori (Nome, Categoria, Insegnante).');
+                return;
+            }
+
+            if (editingRow) {
+                // Modifica riga esistente
+                const cells = editingRow.querySelectorAll('td');
+                const vecchioNome = cells[0].textContent.trim();
+                const nuovoNome = nome;
+                
+                // Se il nome è cambiato, rinomina le chiavi delle lezioni e delle esibizioni nel localStorage
+                if (vecchioNome !== nuovoNome) {
+                    // Rinomina lezioni
+                    const vecchiaChiaveLezioni = 'lezioni_' + vecchioNome;
+                    const nuovaChiaveLezioni = 'lezioni_' + nuovoNome;
+                    const lezioniData = localStorage.getItem(vecchiaChiaveLezioni);
+                    if (lezioniData) {
+                        localStorage.setItem(nuovaChiaveLezioni, lezioniData);
+                        localStorage.removeItem(vecchiaChiaveLezioni);
+                    }
+                    
+                    // Rinomina esibizioni
+                    const vecchiaChiaveEsibizioni = 'esibizioni_' + vecchioNome;
+                    const nuovaChiaveEsibizioni = 'esibizioni_' + nuovoNome;
+                    const esibizioniData = localStorage.getItem(vecchiaChiaveEsibizioni);
+                    if (esibizioniData) {
+                        localStorage.setItem(nuovaChiaveEsibizioni, esibizioniData);
+                        localStorage.removeItem(vecchiaChiaveEsibizioni);
+                    }
+                }
+                
+                cells[0].textContent = nuovoNome;
+                cells[1].textContent = categoria;
+                cells[2].textContent = insegnante;
+                cells[3].textContent = squadra;
+            } else {
+                // Aggiungi nuova riga
+                const tbody = document.querySelector('tbody');
+                const newRow = createTableRow(nome, categoria, insegnante, squadra);
+                tbody.appendChild(newRow);
+            }
+
+            // Salva automaticamente nel localStorage (persistenza dopo chiusura/ricaricamento)
+            saveAllieviToStorage();
+
+            // Chiudi il modal e resetta i campi
+            closeModal();
+        }
+
+        function createTableRow(nome, categoria, insegnante, squadra) {
+            const row = document.createElement('tr');
+            
+            const nomeCell = document.createElement('td');
+            nomeCell.textContent = nome;
+            
+            const categoriaCell = document.createElement('td');
+            categoriaCell.textContent = categoria;
+            
+            const insegnanteCell = document.createElement('td');
+            insegnanteCell.textContent = insegnante;
+            
+            const squadraCell = document.createElement('td');
+            squadraCell.textContent = squadra;
+            
+            const azioniCell = document.createElement('td');
+            const actionButtons = document.createElement('div');
+            actionButtons.className = 'action-buttons';
+            
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-button';
+            editBtn.textContent = '✏️';
+            editBtn.title = 'Modifica';
+            editBtn.onclick = function() { openModal(row); };
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-button';
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.title = 'Elimina';
+            deleteBtn.onclick = function() { deleteAllievo(row); };
+            
+            actionButtons.appendChild(editBtn);
+            actionButtons.appendChild(deleteBtn);
+            azioniCell.appendChild(actionButtons);
+            
+            row.appendChild(nomeCell);
+            row.appendChild(categoriaCell);
+            row.appendChild(insegnanteCell);
+            row.appendChild(squadraCell);
+            row.appendChild(azioniCell);
+            
+            return row;
+        }
+
+        function deleteAllievo(row) {
+            if (confirm('Sei sicuro di voler eliminare questo allievo? Verranno eliminate anche tutte le lezioni e le esibizioni associate.')) {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 1) {
+                    const allievoName = cells[0].textContent.trim();
+                    // Elimina anche le lezioni e le esibizioni associate dal localStorage
+                    const lezioniKey = 'lezioni_' + allievoName;
+                    const esibizioniKey = 'esibizioni_' + allievoName;
+                    localStorage.removeItem(lezioniKey);
+                    localStorage.removeItem(esibizioniKey);
+                }
+                
+                row.remove();
+                // Salva automaticamente nel localStorage (persistenza dopo chiusura/ricaricamento)
+                saveAllieviToStorage();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function saveAllieviToStorage() {
+            try {
+                const tbody = document.querySelector('tbody');
+                if (!tbody) return;
+                
+                const rows = tbody.querySelectorAll('tr');
+                const allievi = [];
+
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    // Prendi solo le prime 4 celle (Nome, Categoria, Insegnante, Squadra)
+                    // Ignora la colonna Azioni (quinta cella)
+                    if (cells.length >= 4) {
+                        allievi.push({
+                            nome: cells[0].textContent.trim(),
+                            categoria: cells[1].textContent.trim(),
+                            insegnante: cells[2].textContent.trim(),
+                            squadra: cells[3].textContent.trim()
+                        });
+                    }
+                });
+
+                localStorage.setItem('allievi', JSON.stringify(allievi));
+            } catch (error) {
+                console.error('Errore nel salvataggio degli allievi:', error);
+            }
+        }
+
+        function loadAllieviFromStorage() {
+            try {
+                const savedAllievi = localStorage.getItem('allievi');
+                if (savedAllievi) {
+                    const allievi = JSON.parse(savedAllievi);
+                    const tbody = document.querySelector('tbody');
+                    if (!tbody) return;
+                    
+                    tbody.innerHTML = '';
+
+                    allievi.forEach(allievo => {
+                        const newRow = createTableRow(
+                            allievo.nome || '',
+                            allievo.categoria || '',
+                            allievo.insegnante || '',
+                            allievo.squadra || '---'
+                        );
+                        tbody.appendChild(newRow);
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento degli allievi:', error);
+                // In caso di errore, prova a salvare gli allievi iniziali
+                addActionButtonsToExistingRows();
+                saveAllieviToStorage();
+            }
+        }
+
+        function addActionButtonsToExistingRows() {
+            const tbody = document.querySelector('tbody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                // Se la riga ha già 5 celle (inclusa Azioni), controlla se ha già i pulsanti
+                if (cells.length === 5) {
+                    const azioniCell = cells[4];
+                    // Se la cella Azioni è vuota o non ha pulsanti, aggiungili
+                    if (!azioniCell.querySelector('.action-buttons')) {
+                        const actionButtons = document.createElement('div');
+                        actionButtons.className = 'action-buttons';
+                        
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'edit-button';
+                        editBtn.textContent = '✏️';
+                        editBtn.title = 'Modifica';
+                        editBtn.onclick = function() { openModal(row); };
+                        
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-button';
+                        deleteBtn.textContent = '🗑️';
+                        deleteBtn.title = 'Elimina';
+                        deleteBtn.onclick = function() { deleteAllievo(row); };
+                        
+                        actionButtons.appendChild(editBtn);
+                        actionButtons.appendChild(deleteBtn);
+                        azioniCell.innerHTML = '';
+                        azioniCell.appendChild(actionButtons);
+                    }
+                } else if (cells.length === 4) {
+                    // Se la riga ha solo 4 celle, aggiungi la cella Azioni
+                    const azioniCell = document.createElement('td');
+                    const actionButtons = document.createElement('div');
+                    actionButtons.className = 'action-buttons';
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'edit-button';
+                    editBtn.textContent = '✏️';
+                    editBtn.title = 'Modifica';
+                    editBtn.onclick = function() { openModal(row); };
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-button';
+                    deleteBtn.textContent = '🗑️';
+                    deleteBtn.title = 'Elimina';
+                    deleteBtn.onclick = function() { deleteAllievo(row); };
+                    
+                    actionButtons.appendChild(editBtn);
+                    actionButtons.appendChild(deleteBtn);
+                    azioniCell.appendChild(actionButtons);
+                    row.appendChild(azioniCell);
+                }
+            });
+        }
+
+        // Carica gli allievi salvati quando la pagina viene caricata
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedAllievi = localStorage.getItem('allievi');
+            if (!savedAllievi) {
+                // Se non ci sono dati salvati, aggiungi i pulsanti alle righe esistenti e salva
+                addActionButtonsToExistingRows();
+                saveAllieviToStorage();
+            } else {
+                // Altrimenti carica quelli salvati (che già hanno i pulsanti)
+                loadAllieviFromStorage();
+            }
+        });
+    </script>
+</body>
+</html>
+

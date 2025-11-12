@@ -1,0 +1,631 @@
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comportamento e Impegno</title>
+    <style>
+        body {
+            background-color: #4682B4; /* Blu avio scuro */
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+        }
+        .add-button {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .add-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        .allievo-section {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        .allievo-name {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .note-container {
+            margin-top: 15px;
+        }
+        .note-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 20px;
+            align-items: start;
+            position: relative;
+        }
+        .note-item:last-child {
+            margin-bottom: 0;
+        }
+        .note-tipo {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        .note-tipo.positiva {
+            background-color: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+        .note-tipo.negativa {
+            background-color: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+        .note-descrizione {
+            color: white;
+            font-size: 1rem;
+        }
+        .edit-button, .delete-button {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .note-item:hover .edit-button,
+        .note-item:hover .delete-button {
+            opacity: 1;
+        }
+        .edit-button:hover {
+            color: #4CAF50;
+            transform: scale(1.2);
+        }
+        .delete-button:hover {
+            color: #ff4444;
+            transform: scale(1.2);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background-color: rgba(70, 130, 180, 0.95);
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .modal-header {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal-form {
+            color: white;
+        }
+        .modal-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .modal-input, .modal-select, .modal-textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        .modal-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .modal-select option {
+            background-color: #4682B4;
+            color: white;
+        }
+        .modal-input:focus, .modal-select:focus, .modal-textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .modal-input::placeholder, .modal-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+        .modal-button-cancel {
+            background: none;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+        .modal-button-save {
+            background: white;
+            color: #4682B4;
+        }
+        .modal-button:hover {
+            opacity: 0.9;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                max-width: 100%;
+            }
+            .header-section {
+                margin-bottom: 20px;
+            }
+            .add-button {
+                width: 100%;
+                padding: 16px;
+                font-size: 1.2rem;
+                min-height: 56px;
+            }
+            .allievo-section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            .allievo-name {
+                font-size: 1.3rem;
+            }
+            .note-item {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 15px;
+            }
+            .note-tipo {
+                text-align: left;
+                padding: 10px;
+            }
+            .edit-button, .delete-button {
+                opacity: 1;
+                font-size: 1.5rem;
+                padding: 10px;
+                min-width: 44px;
+                min-height: 44px;
+            }
+            .action-buttons {
+                gap: 10px;
+                justify-content: flex-end;
+                margin-top: 10px;
+            }
+            .modal-content {
+                padding: 20px;
+                max-width: 95%;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .modal-header {
+                font-size: 1.2rem;
+                margin-bottom: 15px;
+            }
+            .modal-label {
+                font-size: 1rem;
+            }
+            .modal-input, .modal-select, .modal-textarea {
+                padding: 14px;
+                font-size: 1rem;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            .modal-button {
+                padding: 14px 20px;
+                font-size: 1.1rem;
+                min-height: 48px;
+                width: 100%;
+            }
+            .modal-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <button class="add-button" onclick="openModal()">+ Aggiungi Nota</button>
+        </div>
+        
+        <div id="allievi-container">
+            <!-- Le sezioni degli allievi verranno generate dinamicamente -->
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" onclick="closeModal()">×</button>
+            <div class="modal-header" id="modalHeader">Aggiungi Nota</div>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label class="modal-label">Allievo</label>
+                    <select class="modal-select" id="allievoSelect" required>
+                        <option value="">Seleziona allievo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="modal-label">Tipo Nota</label>
+                    <select class="modal-select" id="tipoSelect" required>
+                        <option value="">Seleziona tipo</option>
+                        <option value="positiva">Positiva</option>
+                        <option value="negativa">Negativa</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="modal-label">Descrizione</label>
+                    <textarea class="modal-textarea" id="descrizioneTextarea" placeholder="Inserisci la descrizione della nota..." required></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-cancel" onclick="closeModal()">Annulla</button>
+                    <button class="modal-button modal-button-save" onclick="saveNota()">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let editingNotaItem = null;
+        let currentAllievoName = '';
+
+        function getAllievi() {
+            const savedAllievi = localStorage.getItem('allievi');
+            if (savedAllievi) {
+                try {
+                    return JSON.parse(savedAllievi);
+                } catch (error) {
+                    console.error('Errore nel caricamento degli allievi:', error);
+                }
+            }
+            return [
+                { nome: 'Alessio', categoria: 'Ballo', insegnante: 'Emanuel Lo', squadra: '---' },
+                { nome: 'Alex', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Angie', categoria: 'Canto', insegnante: 'Lorella Cuccarini', squadra: '---' },
+                { nome: 'Anna', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Emiliano', categoria: 'Ballo', insegnante: 'Alessandra Celentano', squadra: '---' },
+                { nome: 'Flavia', categoria: 'Canto', insegnante: 'Anna Pettinelli', squadra: '---' },
+                { nome: 'Gard', categoria: 'Canto', insegnante: 'Anna Pettinelli', squadra: '---' },
+                { nome: 'Maria Rosaria', categoria: 'Ballo', insegnante: 'Alessandra Celentano', squadra: '---' },
+                { nome: 'Michele', categoria: 'Canto', insegnante: 'Lorella Cuccarini', squadra: '---' },
+                { nome: 'Michelle', categoria: 'Canto', insegnante: 'Lorella Cuccarini', squadra: '---' },
+                { nome: 'Opi', categoria: 'Canto', insegnante: 'Anna Pettinelli', squadra: '---' },
+                { nome: 'Paola', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Pierpaolo', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Plasma', categoria: 'Canto', insegnante: 'Rudi Zerbi', squadra: '---' },
+                { nome: 'Riccardo', categoria: 'Canto', insegnante: 'Rudi Zerbi', squadra: '---' },
+                { nome: 'Valentina', categoria: 'Canto', insegnante: 'Rudi Zerbi', squadra: '---' }
+            ];
+        }
+
+        function openModal(notaItem = null, allievoName = null) {
+            editingNotaItem = notaItem;
+            currentAllievoName = allievoName || '';
+            
+            const modalHeader = document.getElementById('modalHeader');
+            const saveButton = document.querySelector('.modal-button-save');
+            
+            // Carica gli allievi nel select
+            const allievoSelect = document.getElementById('allievoSelect');
+            allievoSelect.innerHTML = '<option value="">Seleziona allievo</option>';
+            const allievi = getAllievi();
+            allievi.forEach(allievo => {
+                const option = document.createElement('option');
+                option.value = allievo.nome;
+                option.textContent = allievo.nome;
+                allievoSelect.appendChild(option);
+            });
+            
+            if (notaItem) {
+                // Modal in modalità modifica
+                modalHeader.textContent = 'Modifica Nota';
+                saveButton.textContent = 'Salva Modifiche';
+                
+                const tipoValue = notaItem.querySelector('.note-tipo').classList.contains('positiva') ? 'positiva' : 'negativa';
+                const descrizioneValue = notaItem.querySelector('.note-descrizione').textContent;
+                
+                allievoSelect.value = currentAllievoName;
+                document.getElementById('tipoSelect').value = tipoValue;
+                document.getElementById('descrizioneTextarea').value = descrizioneValue;
+            } else {
+                // Modal in modalità aggiunta
+                modalHeader.textContent = 'Aggiungi Nota';
+                saveButton.textContent = 'Salva';
+                
+                if (currentAllievoName) {
+                    allievoSelect.value = currentAllievoName;
+                }
+                document.getElementById('tipoSelect').value = '';
+                document.getElementById('descrizioneTextarea').value = '';
+            }
+            
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            editingNotaItem = null;
+            currentAllievoName = '';
+            document.getElementById('modal').classList.remove('active');
+            document.getElementById('allievoSelect').value = '';
+            document.getElementById('tipoSelect').value = '';
+            document.getElementById('descrizioneTextarea').value = '';
+        }
+
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        function saveNota() {
+            const allievoName = document.getElementById('allievoSelect').value;
+            const tipo = document.getElementById('tipoSelect').value;
+            const descrizione = document.getElementById('descrizioneTextarea').value.trim();
+
+            if (!allievoName || !tipo || !descrizione) {
+                alert('Per favore, compila tutti i campi.');
+                return;
+            }
+
+            // Trova la sezione dell'allievo
+            const allievoSections = document.querySelectorAll('.allievo-section');
+            let targetSection = null;
+            for (let section of allievoSections) {
+                if (section.querySelector('.allievo-name').textContent === allievoName) {
+                    targetSection = section;
+                    break;
+                }
+            }
+
+            if (!targetSection) {
+                alert('Errore: allievo non trovato.');
+                return;
+            }
+
+            if (editingNotaItem) {
+                // Modifica nota esistente
+                const tipoElement = editingNotaItem.querySelector('.note-tipo');
+                const descrizioneElement = editingNotaItem.querySelector('.note-descrizione');
+                
+                tipoElement.className = 'note-tipo ' + tipo;
+                tipoElement.textContent = tipo === 'positiva' ? 'Positiva' : 'Negativa';
+                descrizioneElement.textContent = descrizione;
+                
+                // Se l'allievo è cambiato, sposta la nota
+                if (currentAllievoName !== allievoName) {
+                    editingNotaItem.remove();
+                    const noteContainer = targetSection.querySelector('.note-container');
+                    noteContainer.appendChild(editingNotaItem);
+                    
+                    // Aggiorna i pulsanti per il nuovo allievo
+                    const editBtn = editingNotaItem.querySelector('.edit-button');
+                    const deleteBtn = editingNotaItem.querySelector('.delete-button');
+                    if (editBtn) {
+                        editBtn.onclick = function() { openModal(editingNotaItem, allievoName); };
+                    }
+                    if (deleteBtn) {
+                        deleteBtn.onclick = function() { deleteNota(this, allievoName); };
+                    }
+                    
+                    // Salva anche la vecchia sezione se esiste
+                    if (currentAllievoName) {
+                        const oldSections = document.querySelectorAll('.allievo-section');
+                        for (let oldSection of oldSections) {
+                            if (oldSection.querySelector('.allievo-name').textContent === currentAllievoName) {
+                                saveAllievoNote(currentAllievoName, oldSection);
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Aggiungi nuova nota
+                const noteContainer = targetSection.querySelector('.note-container');
+                const notaItem = createNotaItem(tipo, descrizione, allievoName);
+                noteContainer.appendChild(notaItem);
+            }
+
+            // Salva nel localStorage
+            saveAllievoNote(allievoName, targetSection);
+
+            closeModal();
+        }
+
+        function createNotaItem(tipo, descrizione, allievoName) {
+            const notaItem = document.createElement('div');
+            notaItem.className = 'note-item';
+            
+            const tipoDiv = document.createElement('div');
+            tipoDiv.className = 'note-tipo ' + tipo;
+            tipoDiv.textContent = tipo === 'positiva' ? 'Positiva' : 'Negativa';
+            
+            const descrizioneDiv = document.createElement('div');
+            descrizioneDiv.className = 'note-descrizione';
+            descrizioneDiv.textContent = descrizione;
+            
+            const actionButtons = document.createElement('div');
+            actionButtons.className = 'action-buttons';
+            
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-button';
+            editBtn.textContent = '✏️';
+            editBtn.title = 'Modifica nota';
+            editBtn.onclick = function() { openModal(notaItem, allievoName); };
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-button';
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.title = 'Elimina nota';
+            deleteBtn.onclick = function() { deleteNota(this, allievoName); };
+            
+            actionButtons.appendChild(editBtn);
+            actionButtons.appendChild(deleteBtn);
+            
+            notaItem.appendChild(tipoDiv);
+            notaItem.appendChild(descrizioneDiv);
+            notaItem.appendChild(actionButtons);
+            
+            return notaItem;
+        }
+
+        function deleteNota(button, allievoName) {
+            if (confirm('Sei sicuro di voler eliminare questa nota?')) {
+                const notaItem = button.closest('.note-item');
+                const allievoSection = notaItem.closest('.allievo-section');
+                
+                notaItem.remove();
+                saveAllievoNote(allievoName, allievoSection);
+            }
+        }
+
+        function saveAllievoNote(allievoName, allievoSection) {
+            try {
+                const noteContainer = allievoSection.querySelector('.note-container');
+                if (!noteContainer) return;
+                
+                const noteHTML = noteContainer.innerHTML;
+                localStorage.setItem('note_comportamento_' + allievoName, noteHTML);
+            } catch (error) {
+                console.error('Errore nel salvataggio delle note:', error);
+            }
+        }
+
+        function loadAllievoNote(allievoName, noteContainer) {
+            try {
+                const savedNote = localStorage.getItem('note_comportamento_' + allievoName);
+                if (savedNote) {
+                    noteContainer.innerHTML = savedNote;
+                    // Re-attach event listeners
+                    noteContainer.querySelectorAll('.note-item').forEach(item => {
+                        const editBtn = item.querySelector('.edit-button');
+                        const deleteBtn = item.querySelector('.delete-button');
+                        if (editBtn) {
+                            editBtn.onclick = function() { openModal(item, allievoName); };
+                        }
+                        if (deleteBtn) {
+                            deleteBtn.onclick = function() { deleteNota(this, allievoName); };
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Errore nel caricamento delle note:', error);
+            }
+        }
+
+        function createAllievoSection(allievoName) {
+            const section = document.createElement('div');
+            section.className = 'allievo-section';
+            
+            const allievoNameDiv = document.createElement('div');
+            allievoNameDiv.className = 'allievo-name';
+            allievoNameDiv.textContent = allievoName;
+            
+            const noteContainer = document.createElement('div');
+            noteContainer.className = 'note-container';
+            
+            section.appendChild(allievoNameDiv);
+            section.appendChild(noteContainer);
+            
+            return section;
+        }
+
+        function loadAllieviSections() {
+            const container = document.getElementById('allievi-container');
+            if (!container) return;
+
+            const allievi = getAllievi();
+            container.innerHTML = '';
+
+            allievi.forEach(allievo => {
+                const allievoName = allievo.nome;
+                const section = createAllievoSection(allievoName);
+                container.appendChild(section);
+
+                const noteContainer = section.querySelector('.note-container');
+                loadAllievoNote(allievoName, noteContainer);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllieviSections();
+        });
+    </script>
+</body>
+</html>
+

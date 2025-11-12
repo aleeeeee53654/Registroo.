@@ -1,0 +1,716 @@
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classifiche Settimanali</title>
+    <style>
+        body {
+            background-color: #4682B4; /* Blu avio scuro */
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .create-button {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .create-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        .classifica-section {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        .classifica-title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .classifica-item {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+        .classifica-item:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+        .classifica-item:last-child {
+            margin-bottom: 0;
+        }
+        .posizione-numero {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+        .posizione-nome {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            flex: 1;
+        }
+        .delete-classifica-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+        }
+        .delete-classifica-button:hover {
+            color: #ff4444;
+            transform: scale(1.2);
+        }
+        .edit-classifica-button {
+            position: absolute;
+            top: 15px;
+            right: 50px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+        }
+        .edit-classifica-button:hover {
+            color: #4CAF50;
+            transform: scale(1.2);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background-color: rgba(70, 130, 180, 0.95);
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .modal-header {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal-form {
+            color: white;
+        }
+        .modal-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .modal-input, .modal-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        .modal-select option {
+            background-color: #4682B4;
+            color: white;
+        }
+        .modal-input:focus, .modal-select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .modal-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .allievi-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .allievo-checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .allievo-checkbox-item:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .allievo-checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .allievo-checkbox-item label {
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            flex: 1;
+        }
+        .ordine-buttons {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+        }
+        .ordine-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .ordine-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+        .modal-button-cancel {
+            background: none;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+        .modal-button-save {
+            background: white;
+            color: #4682B4;
+        }
+        .modal-button:hover {
+            opacity: 0.9;
+        }
+        .classifiche-list {
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                max-width: 100%;
+            }
+            .header-section {
+                flex-direction: column;
+                align-items: stretch;
+                margin-bottom: 20px;
+            }
+            .header-section h1 {
+                font-size: 1.5rem !important;
+                margin-bottom: 15px !important;
+            }
+            .create-button {
+                width: 100%;
+                padding: 16px;
+                font-size: 1.2rem;
+                min-height: 56px;
+            }
+            .classifica-section {
+                padding: 20px 15px;
+                margin-bottom: 20px;
+            }
+            .classifica-title {
+                font-size: 1.4rem;
+                margin-bottom: 20px;
+                padding-right: 80px;
+            }
+            .delete-classifica-button, .edit-classifica-button {
+                font-size: 1.8rem;
+                padding: 8px;
+                min-width: 44px;
+                min-height: 44px;
+            }
+            .delete-classifica-button {
+                right: 10px;
+            }
+            .edit-classifica-button {
+                right: 55px;
+            }
+            .classifica-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 15px;
+            }
+            .posizione-numero {
+                font-size: 1.3rem;
+            }
+            .posizione-nome {
+                font-size: 1.1rem;
+            }
+            .modal-content {
+                padding: 20px;
+                max-width: 95%;
+                max-height: 90vh;
+            }
+            .modal-header {
+                font-size: 1.3rem;
+            }
+            .modal-label {
+                font-size: 1rem;
+            }
+            .modal-input, .modal-select {
+                padding: 14px;
+                font-size: 1rem;
+            }
+            .allievi-list {
+                max-height: 250px;
+            }
+            .allievo-checkbox-item {
+                padding: 12px;
+            }
+            .allievo-checkbox-item input[type="checkbox"] {
+                width: 24px;
+                height: 24px;
+            }
+            .ordine-button {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            .modal-button {
+                padding: 14px 20px;
+                font-size: 1.1rem;
+                min-height: 48px;
+                width: 100%;
+            }
+            .modal-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1 style="color: white; margin: 0; font-size: 2rem;">Classifiche Settimanali</h1>
+            <button class="create-button" onclick="openCreateModal()">Crea Classifica</button>
+        </div>
+        
+        <div id="classifiche-list" class="classifiche-list">
+            <!-- Le classifiche verranno generate dinamicamente -->
+        </div>
+    </div>
+
+    <!-- Modal per creare/modificare classifica -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" onclick="closeModal()">×</button>
+            <div class="modal-header" id="modalHeader">Crea Nuova Classifica</div>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label class="modal-label">Titolo Classifica</label>
+                    <input type="text" class="modal-input" id="titoloInput" placeholder="Inserisci il titolo della classifica" required>
+                </div>
+                <div class="form-group">
+                    <label class="modal-label">Seleziona Allievi (in ordine di posizione)</label>
+                    <div class="allievi-list" id="allieviList">
+                        <!-- Gli allievi verranno caricati dinamicamente -->
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-cancel" onclick="closeModal()">Annulla</button>
+                    <button class="modal-button modal-button-save" onclick="saveClassifica()">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let editingClassificaId = null;
+        let allieviOrdine = [];
+
+        function getAllievi() {
+            const savedAllievi = localStorage.getItem('allievi');
+            if (savedAllievi) {
+                try {
+                    return JSON.parse(savedAllievi);
+                } catch (error) {
+                    console.error('Errore nel caricamento degli allievi:', error);
+                }
+            }
+            // Fallback agli allievi iniziali
+            return [
+                { nome: 'Alessio', categoria: 'Ballo', insegnante: 'Emanuel Lo', squadra: '---' },
+                { nome: 'Alex', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Angie', categoria: 'Canto', insegnante: 'Lorella Cuccarini', squadra: '---' },
+                { nome: 'Anna', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Emiliano', categoria: 'Ballo', insegnante: 'Alessandra Celentano', squadra: '---' },
+                { nome: 'Flavia', categoria: 'Canto', insegnante: 'Anna Pettinelli', squadra: '---' },
+                { nome: 'Gard', categoria: 'Canto', insegnante: 'Anna Pettinelli', squadra: '---' },
+                { nome: 'Maria Rosaria', categoria: 'Ballo', insegnante: 'Alessandra Celentano', squadra: '---' },
+                { nome: 'Michele', categoria: 'Canto', insegnante: 'Lorella Cuccarini', squadra: '---' },
+                { nome: 'Michelle', categoria: 'Canto', insegnante: 'Lorella Cuccarini', squadra: '---' },
+                { nome: 'Opi', categoria: 'Canto', insegnante: 'Anna Pettinelli', squadra: '---' },
+                { nome: 'Paola', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Pierpaolo', categoria: 'Ballo', insegnante: 'Veronica Peparini', squadra: '---' },
+                { nome: 'Plasma', categoria: 'Canto', insegnante: 'Rudi Zerbi', squadra: '---' },
+                { nome: 'Riccardo', categoria: 'Canto', insegnante: 'Rudi Zerbi', squadra: '---' },
+                { nome: 'Valentina', categoria: 'Canto', insegnante: 'Rudi Zerbi', squadra: '---' }
+            ];
+        }
+
+        function openCreateModal(classificaId = null) {
+            editingClassificaId = classificaId;
+            const modalHeader = document.getElementById('modalHeader');
+            const saveButton = document.querySelector('.modal-button-save');
+            
+            if (classificaId) {
+                modalHeader.textContent = 'Modifica Classifica';
+                saveButton.textContent = 'Salva Modifiche';
+                loadClassificaForEdit(classificaId);
+            } else {
+                modalHeader.textContent = 'Crea Nuova Classifica';
+                saveButton.textContent = 'Salva';
+                document.getElementById('titoloInput').value = '';
+                allieviOrdine = [];
+            }
+            
+            loadAllieviInModal();
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function loadAllieviInModal() {
+            const allievi = getAllievi();
+            const allieviList = document.getElementById('allieviList');
+            allieviList.innerHTML = '';
+            
+            allievi.forEach((allievo, index) => {
+                const item = document.createElement('div');
+                item.className = 'allievo-checkbox-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `allievo-${index}`;
+                checkbox.value = allievo.nome;
+                checkbox.checked = allieviOrdine.includes(allievo.nome);
+                checkbox.onchange = function() {
+                    if (this.checked) {
+                        if (!allieviOrdine.includes(allievo.nome)) {
+                            allieviOrdine.push(allievo.nome);
+                        }
+                    } else {
+                        allieviOrdine = allieviOrdine.filter(n => n !== allievo.nome);
+                    }
+                    updateAllieviList();
+                };
+                
+                const label = document.createElement('label');
+                label.htmlFor = `allievo-${index}`;
+                label.textContent = allievo.nome;
+                
+                const ordineButtons = document.createElement('div');
+                ordineButtons.className = 'ordine-buttons';
+                
+                const upBtn = document.createElement('button');
+                upBtn.className = 'ordine-button';
+                upBtn.textContent = '↑';
+                upBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    moveAllievoUp(allievo.nome);
+                };
+                
+                const downBtn = document.createElement('button');
+                downBtn.className = 'ordine-button';
+                downBtn.textContent = '↓';
+                downBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    moveAllievoDown(allievo.nome);
+                };
+                
+                ordineButtons.appendChild(upBtn);
+                ordineButtons.appendChild(downBtn);
+                
+                item.appendChild(checkbox);
+                item.appendChild(label);
+                item.appendChild(ordineButtons);
+                allieviList.appendChild(item);
+            });
+        }
+
+        function moveAllievoUp(nome) {
+            const index = allieviOrdine.indexOf(nome);
+            if (index > 0) {
+                [allieviOrdine[index], allieviOrdine[index - 1]] = [allieviOrdine[index - 1], allieviOrdine[index]];
+                updateAllieviList();
+            }
+        }
+
+        function moveAllievoDown(nome) {
+            const index = allieviOrdine.indexOf(nome);
+            if (index >= 0 && index < allieviOrdine.length - 1) {
+                [allieviOrdine[index], allieviOrdine[index + 1]] = [allieviOrdine[index + 1], allieviOrdine[index]];
+                updateAllieviList();
+            }
+        }
+
+        function updateAllieviList() {
+            const allievi = getAllievi();
+            const allieviList = document.getElementById('allieviList');
+            const items = allieviList.querySelectorAll('.allievo-checkbox-item');
+            
+            // Riordina gli elementi in base all'ordine
+            const orderedItems = [];
+            allieviOrdine.forEach(nome => {
+                items.forEach(item => {
+                    if (item.querySelector('input').value === nome) {
+                        orderedItems.push(item);
+                    }
+                });
+            });
+            
+            // Aggiungi gli elementi non selezionati
+            items.forEach(item => {
+                if (!allieviOrdine.includes(item.querySelector('input').value)) {
+                    orderedItems.push(item);
+                }
+            });
+            
+            // Svuota e riordina
+            allieviList.innerHTML = '';
+            orderedItems.forEach(item => allieviList.appendChild(item));
+        }
+
+        function loadClassificaForEdit(classificaId) {
+            const classifiche = getClassifiche();
+            const classifica = classifiche.find(c => c.id === classificaId);
+            if (classifica) {
+                document.getElementById('titoloInput').value = classifica.titolo;
+                allieviOrdine = [...classifica.allievi];
+            }
+        }
+
+        function closeModal() {
+            editingClassificaId = null;
+            allieviOrdine = [];
+            document.getElementById('modal').classList.remove('active');
+            document.getElementById('titoloInput').value = '';
+        }
+
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        function saveClassifica() {
+            const titolo = document.getElementById('titoloInput').value.trim();
+            
+            if (!titolo) {
+                alert('Per favore, inserisci un titolo per la classifica.');
+                return;
+            }
+            
+            if (allieviOrdine.length === 0) {
+                alert('Per favore, seleziona almeno un allievo per la classifica.');
+                return;
+            }
+            
+            const classifiche = getClassifiche();
+            
+            if (editingClassificaId) {
+                // Modifica classifica esistente
+                const index = classifiche.findIndex(c => c.id === editingClassificaId);
+                if (index !== -1) {
+                    classifiche[index].titolo = titolo;
+                    classifiche[index].allievi = [...allieviOrdine];
+                }
+            } else {
+                // Crea nuova classifica
+                const newClassifica = {
+                    id: Date.now().toString(),
+                    titolo: titolo,
+                    allievi: [...allieviOrdine],
+                    dataCreazione: new Date().toISOString()
+                };
+                classifiche.push(newClassifica);
+            }
+            
+            saveClassifiche(classifiche);
+            loadClassifiche();
+            closeModal();
+        }
+
+        function deleteClassifica(classificaId) {
+            if (confirm('Sei sicuro di voler eliminare questa classifica?')) {
+                const classifiche = getClassifiche();
+                const filtered = classifiche.filter(c => c.id !== classificaId);
+                saveClassifiche(filtered);
+                loadClassifiche();
+            }
+        }
+
+        function getClassifiche() {
+            const saved = localStorage.getItem('classifiche_settimanali');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (error) {
+                    console.error('Errore nel caricamento delle classifiche:', error);
+                }
+            }
+            return [];
+        }
+
+        function saveClassifiche(classifiche) {
+            try {
+                localStorage.setItem('classifiche_settimanali', JSON.stringify(classifiche));
+            } catch (error) {
+                console.error('Errore nel salvataggio delle classifiche:', error);
+            }
+        }
+
+        function loadClassifiche() {
+            const classifiche = getClassifiche();
+            const container = document.getElementById('classifiche-list');
+            container.innerHTML = '';
+            
+            if (classifiche.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.style.color = 'white';
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.style.padding = '40px';
+                emptyMsg.style.fontSize = '1.2rem';
+                emptyMsg.textContent = 'Nessuna classifica creata. Clicca su "Crea Classifica" per iniziare.';
+                container.appendChild(emptyMsg);
+                return;
+            }
+            
+            classifiche.forEach(classifica => {
+                const section = document.createElement('div');
+                section.className = 'classifica-section';
+                
+                const title = document.createElement('div');
+                title.className = 'classifica-title';
+                title.textContent = classifica.titolo;
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'edit-classifica-button';
+                editBtn.textContent = '✏️';
+                editBtn.title = 'Modifica classifica';
+                editBtn.onclick = function() { openCreateModal(classifica.id); };
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-classifica-button';
+                deleteBtn.textContent = '🗑️';
+                deleteBtn.title = 'Elimina classifica';
+                deleteBtn.onclick = function() { deleteClassifica(classifica.id); };
+                
+                classifica.allievi.forEach((nome, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'classifica-item';
+                    
+                    const numero = document.createElement('div');
+                    numero.className = 'posizione-numero';
+                    numero.textContent = (index + 1) + '.';
+                    
+                    const nomeDiv = document.createElement('div');
+                    nomeDiv.className = 'posizione-nome';
+                    nomeDiv.textContent = nome.toUpperCase();
+                    
+                    item.appendChild(numero);
+                    item.appendChild(nomeDiv);
+                    section.appendChild(item);
+                });
+                
+                section.insertBefore(title, section.firstChild);
+                section.appendChild(editBtn);
+                section.appendChild(deleteBtn);
+                container.appendChild(section);
+            });
+        }
+
+        // Carica le classifiche quando la pagina viene caricata
+        document.addEventListener('DOMContentLoaded', function() {
+            loadClassifiche();
+        });
+    </script>
+</body>
+</html>
